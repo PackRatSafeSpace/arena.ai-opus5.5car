@@ -1,0 +1,31 @@
+name: Restore original package lock
+
+on:
+  push:
+    paths:
+      - ".github/workflows/restore-lock.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore original lockfile
+        shell: bash
+        run: |
+          cat .import/lock.gz.b64.00 .import/lock.gz.b64.01 .import/lock.gz.b64.02 | base64 -d | gzip -d > package-lock.json
+          test "$(wc -c < package-lock.json)" -eq 88319
+      - name: Commit exact lockfile
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .import/lock.gz.b64.00 .import/lock.gz.b64.01 .import/lock.gz.b64.02
+          git rm .github/workflows/restore-lock.yml
+          git add package-lock.json
+          git commit -m "Restore original Arena package lock"
+          git push
