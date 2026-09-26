@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Viewer } from "./f1/viewer";
 
 type Status = { phase: "loading" | "ready" | "error"; label: string; frac: number; error?: string };
@@ -139,6 +140,7 @@ export default function App() {
           </div>
         </div>
       )}
+      <SpeedInsights />
     </div>
   );
 }
