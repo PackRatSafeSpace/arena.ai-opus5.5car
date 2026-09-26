@@ -1,0 +1,34 @@
+name: Finish preserved source import
+
+on:
+  push:
+    paths:
+      - ".github/workflows/finish-import.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  reconstruct:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reconstruct preserved car source
+        shell: bash
+        run: |
+          mkdir -p src/f1
+          base64 -d .import/car.ts.gz.b64 | gzip -d > src/f1/car.ts
+          test "$(wc -c < src/f1/car.ts)" -eq 34369
+      - name: Recreate dependency lockfile
+        run: npm install --package-lock-only --ignore-scripts
+      - name: Commit finished import
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .import/car.ts.gz.b64
+          git rm .github/workflows/finish-import.yml
+          git add src/f1/car.ts package-lock.json
+          git commit -m "Complete preserved Opus 5.5 High F1 project import"
+          git push
